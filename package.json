@@ -1,0 +1,13 @@
+{
+  "name": "logging-app",
+  "version": "1.0.0",
+  "description": "Simple web app with logging to /var/log and stdout",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "morgan": "^1.10.0"
+  }
+}

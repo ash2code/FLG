@@ -1,40 +1,53 @@
+replicaCount: 5 # Match the worker node count
 
-daemonSet: false
-replicaCount: 1
+#affinity:
+#  podAntiAffinity:
+#    requiredDuringSchedulingIgnoredDuringExecution:
+#      - labelSelector:
+#          matchExpressions:
+#            - key: "app"
+#              operator: In
+#              values:
+#                - "fluent-bit"
+#        topologyKey: "kubernetes.io/hostname" # Ensure pods are not scheduled on the same node
+
+daemonSet: false # Use ReplicaSet instead of DaemonSet
 
 securityContext:
   privileged: true
+  runAsUser: 0
+
+containers:
+  - name: fluent-bit
+    image: fluent/fluent-bit:2.0
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: varlog
+        mountPath: /var/log
+
+input: |
+  [INPUT]
+      Name tail
+      Path /var/log/*.log
+      Tag kube.*
+      Parser docker
+      Mem_Buf_Limit 5MB
+      Skip_Long_Lines On
+
+output: |
+  [OUTPUT]
+      Name loki
+      Match *
+      Host loki
+      Port 3100
+      HTTP_User admin
+      HTTP_Passwd admin
+      Log_Level info
+      Retry_Limit False
 
 volumes:
   - name: varlog
     hostPath:
       path: /var/log
-      type: DirectoryOrCreate
-
-volumeMounts:
-  - name: varlog
-    mountPath: /var/log
-    readOnly: true
-
-input:
-  tail:
-    path: /var/log/containers/*.log
-    db: /var/log/flb_kube.db
-    tag: kube.*
-    parser: docker
-
-output:
-  loki:
-    enabled: true
-    host: loki
-    port: 3100
-    labels:
-      job: varlogs
-    match: kube.*
-
-tls:
-  enabled: true
-  certificate_file: /fluent-bit/tls/client.crt
-  key_file: /fluent-bit/tls/client.key
-  ca_file: /fluent-bit/tls/ca.crt
-  insecure_skip_verify: false
+      type: Directory

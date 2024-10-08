@@ -1,0 +1,28 @@
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: fluent-bit-scc
+allowHostDirVolumePlugin: true
+allowHostNetwork: false
+allowHostPorts: false
+allowPrivilegedContainer: true
+allowedCapabilities: []
+defaultAddCapabilities: []
+fsGroup:
+  type: RunAsAny
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+volumes:
+  - hostPath
+  - secret
+  - configMap
+  - persistentVolumeClaim
+  - emptyDir
+  - downwardAPI
+  - projected
+users:
+  - system:serviceaccount:logging:fluent-bit

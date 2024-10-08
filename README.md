@@ -9,6 +9,15 @@ helm repo list
 to install with custom values
 helm install fluent-bit fluent/fluent-bit -f values.yaml --namespace logging
 
+Fluent Bit
+Port: 2020
+
+Loki
+Port: 3100
+
+Grafana
+Port: 80 (or 3000 when port-forwarded)
+
 ***************************************************************************************
 
 **step 01**: we have to create SCC (security context constraint) 
@@ -21,21 +30,21 @@ helm install fluent-bit fluent/fluent-bit -f values.yaml --namespace logging
          oc adm policy add-scc-to-user fluent-bit-scc -z fluent-bit -n logging
          This grants the Fluent Bit pods the necessary privileges to run in OpenShift with access to host paths and log directories.
 
-step 03: Install Loki with Helm
+**step 03**: Install Loki with Helm
          Add the Loki Helm repository : 
          helm repo add grafana https://grafana.github.io/helm-charts
          helm repo update
 
-step 04: Install Loki.
+**step 04**: Install Loki.
          helm install loki grafana/loki-stack --namespace logging --set grafana.enabled=false,prometheus.enabled=false
 
-step 05: Install Fluent Bit with Helm
+**step 05**: Install Fluent Bit with Helm
          helm install fluent-bit fluent/fluent-bit --namespace logging -f fluent-bit-values-openshift.yaml
 
-step 06: Install Grafana with Helm
+**step 06**: Install Grafana with Helm
          helm install grafana grafana/grafana --namespace logging
 
-step 07: Verify OpenShift Logging Stack Setup
+**step 07**: Verify OpenShift Logging Stack Setup
          Verify that the Fluent Bit pods are running on different worker nodes using:
          oc get pods -o wide -n logging
          Log Collection:
